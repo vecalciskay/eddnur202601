@@ -28,4 +28,20 @@ Luego calcular:
 
 ## Presentación
 
-El práctico será presentado el viernes 20 de Marzo de 2026
+El práctico será presentado el martes 24 de Marzo de 2026
+
+Preguntas en la revisión:
+* Cómo saben si está realmente mezclada la baraja?
+* Cuán bien mezclada está la baraja?
+* Cuales son los criterios que ha encontrado para saber si la baraja está bien mezclada?
+* Escriba en papel y lapiz el algoritmo para mezclar (lo que está dentro del for)
+
+````
+Ac 2c ....Qc Kc
+1   2     12 13
+
+Ac coloco en pos 13 y Kc va a 1
+   Kc 2c ....Qc Ac
+Or 1   2     12 13
+Ac 13  2     12 1
+````
