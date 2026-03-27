@@ -24,4 +24,11 @@ public class Simple {
         int suma = n + calcularSuma(n-1);
         return suma;
     }
+
+    /**
+     * Stack overflow
+     */
+    public void m() {
+        m();
+    }
 }
