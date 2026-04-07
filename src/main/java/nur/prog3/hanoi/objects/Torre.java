@@ -24,4 +24,14 @@ public class Torre {
     public Anillo sacar() {
         return anillos.pop();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("|-");
+        for(Anillo a : anillos) {
+            sb.append(a).append("-");
+        }
+        return sb.toString();
+    }
 }

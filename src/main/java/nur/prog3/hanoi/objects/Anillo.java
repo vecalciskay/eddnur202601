@@ -10,4 +10,9 @@ public class Anillo {
     public int getTamano() {
         return tamano;
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(tamano);
+    }
 }

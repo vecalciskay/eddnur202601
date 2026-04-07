@@ -36,4 +36,4 @@ hacen que los circulos se muevan.
 
 ## Fecha de presentacion
 
-Martes 7 de abril
+Viernes 10 de abril
