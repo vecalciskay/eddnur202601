@@ -4,6 +4,10 @@ public class MatrizMandel {
     private int[][] puntos;
     private int ancho;
     private int alto;
+    private double minReal;
+    private double minImaginario;
+    private double maxReal;
+    private double maxImaginario;
     private NumeroComplejo inferiorIzquierda;
     private NumeroComplejo superiorDerecha;
 
@@ -11,8 +15,12 @@ public class MatrizMandel {
         puntos = new int[w][h];
         alto = h;
         ancho = w;
-        inferiorIzquierda = new NumeroComplejo(-2,-2);
-        superiorDerecha = new NumeroComplejo(2,2);
+        minImaginario = -2;
+        minReal = -2;
+        maxImaginario = 2;
+        maxReal = 2;
+        inferiorIzquierda = new NumeroComplejo(minReal,minImaginario);
+        superiorDerecha = new NumeroComplejo(maxReal, maxImaginario);
     }
 
     public int divergenteEn(NumeroComplejo z0,
