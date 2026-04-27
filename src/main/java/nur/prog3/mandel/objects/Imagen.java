@@ -1,6 +1,7 @@
 package nur.prog3.mandel.objects;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -58,13 +59,18 @@ public class Imagen  {
     }
 
     public void dibujar(Graphics g) {
+        BufferedImage bi = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+        Graphics biGraphics = bi.createGraphics();
         for (int i = 0; i < ancho; i++) {
             for (int j = 0; j < alto; j++) {
                 Color c = new Color(pixeles[i][j]);
-                g.setColor(c);
-                g.drawLine(i,j,i,j);
+                biGraphics.setColor(c);
+                biGraphics.drawLine(i,j,i,j);
             }
         }
+        biGraphics.dispose();
+
+        g.drawImage(bi, 0, 0, null);
     }
 
     public int getAncho() {

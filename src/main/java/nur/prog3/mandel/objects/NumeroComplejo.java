@@ -1,8 +1,8 @@
 package nur.prog3.mandel.objects;
 
 public class NumeroComplejo {
-    private double valorReal;
-    private double valorImaginario;
+    private final double valorReal;
+    private final double valorImaginario;
 
     public NumeroComplejo(double valorReal, double valorImaginario) {
         this.valorReal = valorReal;
@@ -10,28 +10,26 @@ public class NumeroComplejo {
     }
 
     public NumeroComplejo add(NumeroComplejo arg) {
-        this.valorReal += arg.getValorReal();
-        this.valorImaginario += arg.getValorImaginario();
-        return this;
+        return new NumeroComplejo(
+                this.valorReal + arg.getValorReal(),
+                this.valorImaginario + arg.getValorImaginario()
+        );
     }
 
     public NumeroComplejo multiply(NumeroComplejo arg) {
-        valorReal = valorReal * arg.getValorReal() -
+        double nuevoReal = valorReal * arg.getValorReal() -
                 valorImaginario * arg.getValorImaginario();
-        valorImaginario = valorReal * arg.getValorImaginario() +
+        double nuevoImaginario = valorReal * arg.getValorImaginario() +
                 valorImaginario * arg.getValorReal();
-        //(a + bi)*(c+di) = ac + adi + bci - bd
-        return this;
+        return new NumeroComplejo(nuevoReal, nuevoImaginario);
     }
 
-    public double getAbs() {
+    public double abs() {
         double sumaCatetosAlCuadrado =
                 valorReal * valorReal +
                 valorImaginario * valorImaginario;
-        double hipotenusa =
-                Math.sqrt(sumaCatetosAlCuadrado);
 
-        return hipotenusa;
+        return Math.sqrt(sumaCatetosAlCuadrado);
     }
 
     public double getValorReal() {

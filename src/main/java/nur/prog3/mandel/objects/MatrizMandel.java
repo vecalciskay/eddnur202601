@@ -1,6 +1,10 @@
 package nur.prog3.mandel.objects;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class MatrizMandel {
+    private final Logger logger = LogManager.getRootLogger();
     private int[][] puntos;
     private int ancho;
     private int alto;
@@ -11,14 +15,16 @@ public class MatrizMandel {
     private NumeroComplejo inferiorIzquierda;
     private NumeroComplejo superiorDerecha;
 
+    private static final int[] PALETTE = buildPalette();
+
     public MatrizMandel(int w, int h) {
         puntos = new int[w][h];
         alto = h;
         ancho = w;
-        minImaginario = -2;
-        minReal = -2;
-        maxImaginario = 2;
-        maxReal = 2;
+        minImaginario = -1;
+        minReal = -1.5;
+        maxImaginario = 1;
+        maxReal = 0.5;
         inferiorIzquierda = new NumeroComplejo(minReal,minImaginario);
         superiorDerecha = new NumeroComplejo(maxReal, maxImaginario);
     }
@@ -26,47 +32,50 @@ public class MatrizMandel {
     public int divergenteEn(NumeroComplejo z0,
                             int max) {
         // Testeamos si z0 nos lleva a una secuencia divergente
-        int iter = 0;
+        int color = 0;
         NumeroComplejo z = z0;
-        boolean convergente = true;
-        while (convergente && iter < max) {
-            double valorAbsolutoZ = z.getAbs();
-            if (valorAbsolutoZ >= 2.0)
-            {
-                convergente = false;
-                break;
-            }
-            NumeroComplejo zn1 =
-                    z.multiply(z).add(z0);
-            z = zn1;
-            iter++;
+        double valorAbsolutoZ = z.abs();
+        while (valorAbsolutoZ < 2 && color < max) {
+            z = z.multiply(z).add(z0);
+            valorAbsolutoZ = z.abs();
+            color++;
         }
-        return iter;
+        return color;
     }
 
     public void hacerMandel() {
         for (int i = 0; i < ancho; i++) {
             for (int j = 0; j < alto; j++) {
-                hacerMandel(i,j);
+                NumeroComplejo z = reglaDe3PlanoRealAComplejo(i,j);
+                int color = divergenteEn(z, 255);
+                puntos[i][j] = color;
             }
         }
     }
 
-    public void hacerMandel(int x, int y) {
-        double v_re = (double)x * 4.0 / (double)ancho - 2.0;
-        double v_im = - (double)y * 4.0 / (double)alto + 2.0;
-        NumeroComplejo z0 = new NumeroComplejo(v_re,v_im);
-        int color = divergenteEn(z0, 255);
-
-        puntos[x][y] = color;
+    public NumeroComplejo reglaDe3PlanoRealAComplejo(int x, int y) {
+        double difMaxMinReal = maxReal - minReal;
+        double difMaxMinImaginario = maxImaginario - minImaginario;
+        double valorReal = x * (difMaxMinReal) / ancho + minReal;
+        double valorImaginario = minImaginario + y * difMaxMinImaginario / alto;
+        return new NumeroComplejo(valorReal, valorImaginario);
     }
 
     public Imagen getImagen() {
         Imagen img = new Imagen(ancho,alto);
         for (int i = 0; i < ancho; i++) {
             for (int j = 0; j < alto; j++) {
-                int c = puntos[i][j];
-                img.setRgb(i,j,c,c,c);
+                int iteracion = puntos[i][j];
+                if (iteracion == 255) {
+                    // Interior del conjunto = negro
+                    img.setRgb(i, j, 0, 0, 0);
+                } else {
+                    int color = PALETTE[iteracion % 255];
+                    int r = (color >> 16) & 0xFF;
+                    int g = (color >>  8) & 0xFF;
+                    int b =  color        & 0xFF;
+                    img.setRgb(i, j, r, g, b);
+                }
             }
         }
         return img;
@@ -78,5 +87,36 @@ public class MatrizMandel {
 
     public int getAlto() {
         return alto;
+    }
+
+    private static int[] buildPalette() {
+        // Colores ancla: la paleta "Ultra Fractal" clásica
+        // usada en Wikipedia y la mayoría de visualizadores de referencia
+        int[][] anclas = {
+                {  0,   7, 100},  // azul profundo
+                { 32, 107, 203},  // azul medio
+                {237, 255, 255},  // cian casi blanco
+                {255, 170,   0},  // dorado
+                {  0,   2,   0},  // negro (borde del conjunto)
+        };
+
+        int[] palette = new int[256];
+        int numSegmentos = anclas.length - 1;
+        int porSegmento = 256 / numSegmentos;
+
+        for (int seg = 0; seg < numSegmentos; seg++) {
+            int[] desde = anclas[seg];
+            int[] hasta  = anclas[seg + 1];
+            for (int i = 0; i < porSegmento; i++) {
+                float t = (float) i / porSegmento;
+                int r = (int) (desde[0] + t * (hasta[0] - desde[0]));
+                int g = (int) (desde[1] + t * (hasta[1] - desde[1]));
+                int b = (int) (desde[2] + t * (hasta[2] - desde[2]));
+                palette[seg * porSegmento + i] = (r << 16) | (g << 8) | b;
+            }
+        }
+        // Último slot = negro (interior del conjunto)
+        palette[255] = 0x000000;
+        return palette;
     }
 }
