@@ -3,6 +3,9 @@ package nur.prog3.mandel.objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
 public class MatrizMandel {
     private final Logger logger = LogManager.getRootLogger();
     private int[][] puntos;
@@ -14,6 +17,9 @@ public class MatrizMandel {
     private double maxImaginario;
     private NumeroComplejo inferiorIzquierda;
     private NumeroComplejo superiorDerecha;
+    private int zoomX;
+    private int zoomY;
+    private PropertyChangeSupport observado;
 
     private static final int[] PALETTE = buildPalette();
 
@@ -27,6 +33,14 @@ public class MatrizMandel {
         maxReal = 0.5;
         inferiorIzquierda = new NumeroComplejo(minReal,minImaginario);
         superiorDerecha = new NumeroComplejo(maxReal, maxImaginario);
+
+        zoomX = -1;
+        zoomY = -1;
+        observado = new PropertyChangeSupport(this);
+    }
+
+    public void addObserver(PropertyChangeListener listener) {
+        observado.addPropertyChangeListener(listener);
     }
 
     public int divergenteEn(NumeroComplejo z0,
@@ -66,16 +80,15 @@ public class MatrizMandel {
         for (int i = 0; i < ancho; i++) {
             for (int j = 0; j < alto; j++) {
                 int iteracion = puntos[i][j];
-                if (iteracion == 255) {
-                    // Interior del conjunto = negro
-                    img.setRgb(i, j, 0, 0, 0);
-                } else {
-                    int color = PALETTE[iteracion % 255];
-                    int r = (color >> 16) & 0xFF;
-                    int g = (color >>  8) & 0xFF;
-                    int b =  color        & 0xFF;
-                    img.setRgb(i, j, r, g, b);
-                }
+
+
+                int color = PALETTE[iteracion];
+                int r = (color >> 16) & 0xFF;
+                int g = (color >>  8) & 0xFF;
+                int b =  color        & 0xFF;
+                img.setRgb(i, j, r, g, b);
+
+                //img.setRgb(i, j, iteracion, iteracion, iteracion);
             }
         }
         return img;
@@ -87,6 +100,23 @@ public class MatrizMandel {
 
     public int getAlto() {
         return alto;
+    }
+
+    public int getZoomX() {
+        return zoomX;
+    }
+
+    public void setZoomX(int zoomX) {
+        this.zoomX = zoomX;
+        observado.firePropertyChange("MANDEL", true, false);
+    }
+
+    public int getZoomY() {
+        return zoomY;
+    }
+
+    public void setZoomY(int zoomY) {
+        this.zoomY = zoomY;
     }
 
     private static int[] buildPalette() {
@@ -118,5 +148,32 @@ public class MatrizMandel {
         // Último slot = negro (interior del conjunto)
         palette[255] = 0x000000;
         return palette;
+    }
+
+    public void nuevasCoordenadas() {
+        int nuevoMinX = zoomX;
+        int nuevoMaxY = zoomY;
+        int nuevoMaxX = zoomX + 50;
+        int nuevoMinY = zoomY + 50;
+
+        NumeroComplejo nuevoMinimo =
+                reglaDe3PlanoRealAComplejo(nuevoMinX, nuevoMinY);
+        NumeroComplejo nuevoMaximo =
+                reglaDe3PlanoRealAComplejo(nuevoMaxX, nuevoMaxY);
+
+        logger.info("[" + nuevoMinX + ", " + nuevoMinY + "] -> " +
+                nuevoMinimo.toString());
+
+        logger.info("[" + nuevoMaxX + ", " + nuevoMaxY + "] -> " +
+                nuevoMaximo.toString());
+
+        minReal = nuevoMinimo.getValorReal();
+        minImaginario = nuevoMinimo.getValorImaginario();
+        maxReal = nuevoMaximo.getValorReal();
+        maxImaginario = nuevoMaximo.getValorImaginario();
+
+        hacerMandel();
+
+        observado.firePropertyChange("MANDEL", true, false);
     }
 }
