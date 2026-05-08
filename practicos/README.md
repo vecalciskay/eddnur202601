@@ -20,6 +20,9 @@ DEBUG / INFO / WARN / ERROR / FATAL
 
 ## Lista de prácticos
 
-| Práctico                       | Fecha              |
-|--------------------------------|--------------------|
-| [TP1 - Cartas](./p1/README.md) | Martes 24 de marzo |
+| Práctico                            | Fecha              |
+|-------------------------------------|--------------------|
+| [TP1 - Cartas](./p1/README.md)      | Martes 24 de marzo |
+| [TP2 - Juego](./p2/README.md)       |                    |
+| [TP3 - Imagenes](./p3/README.md)    |                    |
+| [TP4 - Pizarra Red](./p4/README.md) | Viernes 15 de mayo |
