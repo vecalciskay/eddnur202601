@@ -29,6 +29,7 @@ public class BancoServidor {
 
         while(true) {
             Socket clt = socketServer.accept();
+            logger.info("Cliente conectado");
             Thread t = new Thread(ProtocoloBanco.crearParaServer(clt, this));
             t.start();
         }

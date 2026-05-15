@@ -63,119 +63,117 @@ public class ProtocoloBanco implements Runnable {
         return obj;
     }
 
-    public void depositar(double monto) throws IOException {
-        String msg = ConfigRed.CMD_DEPOSITO + " " + String.valueOf(monto);
-        logger.info(">>> " + msg);
-        salida.println(msg);
-
-        String respuesta = entrada.readLine();
-        logger.info("<<< " + respuesta);
-        double[] saldoRespuesta = new double[1];
-        if (expresionOkSaldoValida(respuesta,
-                ConfigRed.RESPUESTA_OK_SALDO, saldoRespuesta)) {
-            logger.error("No es OK, algo paso");
-            throw new IOException("El monto es incorrecto o algo asi");
-        }
-        logger.info("Monto depositado");
-    }
-
-    private boolean expresionOkSaldoValida(
-            String respuesta, String respuestaOkSaldo,
-            double[] saldo) {
-        Pattern regex = Pattern.compile(respuestaOkSaldo);
-        Matcher matcher = regex.matcher(respuesta);
-
-        if (matcher.find()) {
-            saldo[0] = Double.parseDouble(matcher.group(1));
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     @Override
     public void run() {
+        ComandoBanco cmd = null;
         Cuenta clt = null;
         try {
-            clt = comandoHola();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if (clt == null) {
-            logger.info("Comando equivocado, termina todo");
-            try {
+            cmd = comandoRecibido(null);
+            if (!(cmd instanceof ComandoHola)) {
+                logger.error("Error de protocolo debe comenzar con Hola");
+                salida.println("ERROR");
+                salida.flush();
                 cerrarConexion();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
-            return;
+            cmd.atenderComandoSegunProtocolo();
+            ComandoHola cmdHola = (ComandoHola) cmd;
+            clt = getCuentaCliente(cmdHola.getCi());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
         try {
-            comandoDepositar(clt);
-            comandoFin();
-            logger.info(banco);
+            boolean sesionTerminada = false;
+            while(!sesionTerminada) {
+                cmd = comandoRecibido(clt);
+                if (cmd == null) {
+                    logger.error("No conoce ese comando");
+                    salida.println("ERROR");
+                    salida.flush();
+                    logger.info(">>> ERROR");
+                    continue;
+                }
+                logger.info("Ahora pasa la mano al comando para que ejecute");
+                sesionTerminada = cmd.atenderComandoSegunProtocolo();
+            }
+
+            logger.info("Cierra conexion");
+            cerrarConexion();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void comandoFin() throws IOException {
-        String cmd = entrada.readLine();
-        this.cerrarConexion();
+    private Cuenta getCuentaCliente(int ci) {
+        for(Cuenta clt : banco.getCuentas()) {
+            if (clt.getCi() == ci) {
+                return clt;
+            }
+        }
+        if (ci > 0) {
+            Cuenta nueva = new Cuenta(ci);
+            banco.addCuenta(nueva);
+            return nueva;
+        }
+        return null;
     }
 
-    private void comandoDepositar(Cuenta clt) throws IOException {
+    private ComandoBanco comandoRecibido(Cuenta clt) throws IOException {
+        String linea = entrada.readLine();
+        logger.info("<<< " + linea);
 
-        String cmd = entrada.readLine();
-        double[] monto = new double[1];
-        if (expresionOkSaldoValida(cmd, ConfigRed.CMD_DEPOSITO, monto)) {
-            clt.depositar(monto[0]);
-            salida.println("OK - " + clt.getSaldo());
-        } else {
-            salida.println("ERROR");
+        ComandoBanco cmd = null;
+        for(TipoComando tipoComando : TipoComando.values()) {
+            String regexCmd = ConfigRed.expresiones.get(tipoComando);
+            Pattern pattern = Pattern.compile(regexCmd);
+            Matcher matcher = pattern.matcher(linea);
+
+            if (matcher.find()) {
+                cmd = comandoPorTipoComando(tipoComando, clt);
+                logger.info("El comando que se hara cargo es: " + cmd.getNombre());
+                cmd.setPrimeraLinea(linea);
+                return cmd;
+            }
         }
+        return null;
+    }
+
+    private ComandoBanco comandoPorTipoComando(TipoComando tipoComando, Cuenta clt) {
+        ComandoBanco cmd;
+        cmd = switch(tipoComando) {
+            case TipoComando.Hola -> new ComandoHola(this);
+            case TipoComando.Fin -> new ComandoFin(this);
+            case TipoComando.Deposito -> new ComandoDeposito(this, clt);
+        };
+
+        return cmd;
+    }
+
+    public PrintWriter getSalida() {
+        return salida;
+    }
+
+    public BufferedReader getEntrada() {
+        return entrada;
     }
 
     private void cerrarConexion() throws IOException {
         cliente.close();
-    }
-
-    private Cuenta comandoHola() throws IOException {
-        String cmd = entrada.readLine();
-        Cuenta cta = expresionHolaValida(cmd, ConfigRed.CMD_HOLA);
-        return cta;
-    }
-
-    private Cuenta expresionHolaValida(String cmd, String cmdHola) {
-        Pattern regex = Pattern.compile(cmdHola);
-        Matcher matcher = regex.matcher(cmd);
-
-        if (matcher.find()) {
-            int ci = Integer.parseInt(matcher.group(1));
-            Cuenta cta = null;
-            for(Cuenta ctaEnBanco : banco.getCuentas()) {
-                if (ctaEnBanco.getCi() == ci) {
-                    cta = ctaEnBanco;
-                }
-            }
-            if (cta == null) {
-                cta = new Cuenta(ci);
-                banco.addCuenta(cta);
-            }
-            return cta;
-        } else {
-            return null;
-        }
+        logger.info("Se cierra la conexion con el cliente");
     }
 
     public void hola(int ci) throws IOException {
-        salida.println("HOLA " + ci);
-        entrada.readLine();
+        ComandoBanco cmd = new ComandoHola(this);
+        cmd.ejecutarComoCliente(new Integer[] { ci });
     }
 
     public void fin() throws IOException {
-        salida.println("FIN");
-        entrada.readLine();
+        ComandoBanco cmd = new ComandoFin(this);
+        cmd.ejecutarComoCliente(new Object[1]);
         cerrarConexion();
+    }
+    public void depositar(int ci, double monto) throws IOException {
+        ComandoBanco cmd = new ComandoDeposito(this, ci);
+        cmd.ejecutarComoCliente(new Double[] {monto});
     }
 }
