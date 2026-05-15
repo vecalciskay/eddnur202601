@@ -68,12 +68,12 @@ public class ComandoDeposito extends ComandoBanco {
 
         String respuesta = protocolo.getEntrada().readLine();
         logger.info("<<< " + respuesta);
-        Double[] saldoRespuesta = new Double[1];
+        /*Double[] saldoRespuesta = new Double[1];
         if (expresionValida(respuesta,
                 ConfigRed.RESPUESTA_OK_SALDO, saldoRespuesta)) {
             logger.error("No es OK, algo paso");
             throw new IOException("El monto es incorrecto o algo asi");
-        }
+        }*/
         logger.info("Monto depositado");
     }
 }

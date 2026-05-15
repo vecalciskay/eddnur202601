@@ -19,7 +19,7 @@ public class CuentaCliente {
 
         ProtocoloBanco protocolo = ProtocoloBanco.crearNuevo();
         protocolo.hola(5738);
-        protocolo.depositar(400, 40.2);
+        protocolo.depositar(40.2);
         protocolo.fin();
     }
 }

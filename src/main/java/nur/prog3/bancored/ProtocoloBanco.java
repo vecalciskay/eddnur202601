@@ -34,6 +34,7 @@ public class ProtocoloBanco implements Runnable {
     private PrintWriter salida;
     private BufferedReader entrada;
     private BancoServidor banco;
+    private Cuenta cuenta;
 
     private ProtocoloBanco(Socket clt) throws IOException {
         cliente = clt;
@@ -66,7 +67,6 @@ public class ProtocoloBanco implements Runnable {
     @Override
     public void run() {
         ComandoBanco cmd = null;
-        Cuenta clt = null;
         try {
             cmd = comandoRecibido(null);
             if (!(cmd instanceof ComandoHola)) {
@@ -77,7 +77,7 @@ public class ProtocoloBanco implements Runnable {
             }
             cmd.atenderComandoSegunProtocolo();
             ComandoHola cmdHola = (ComandoHola) cmd;
-            clt = getCuentaCliente(cmdHola.getCi());
+            cuenta = getCuentaCliente(cmdHola.getCi());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -85,7 +85,7 @@ public class ProtocoloBanco implements Runnable {
         try {
             boolean sesionTerminada = false;
             while(!sesionTerminada) {
-                cmd = comandoRecibido(clt);
+                cmd = comandoRecibido(cuenta);
                 if (cmd == null) {
                     logger.error("No conoce ese comando");
                     salida.println("ERROR");
@@ -144,6 +144,7 @@ public class ProtocoloBanco implements Runnable {
             case TipoComando.Hola -> new ComandoHola(this);
             case TipoComando.Fin -> new ComandoFin(this);
             case TipoComando.Deposito -> new ComandoDeposito(this, clt);
+            case TipoComando.Saldo -> new ComandoSaldo(this, clt);
         };
 
         return cmd;
@@ -172,8 +173,8 @@ public class ProtocoloBanco implements Runnable {
         cmd.ejecutarComoCliente(new Object[1]);
         cerrarConexion();
     }
-    public void depositar(int ci, double monto) throws IOException {
-        ComandoBanco cmd = new ComandoDeposito(this, ci);
+    public void depositar(double monto) throws IOException {
+        ComandoBanco cmd = new ComandoDeposito(this, 10);
         cmd.ejecutarComoCliente(new Double[] {monto});
     }
 }
