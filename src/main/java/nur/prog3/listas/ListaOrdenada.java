@@ -19,7 +19,8 @@ public class ListaOrdenada<E> extends Lista<E> {
         }
 
         Nodo<E> actual = primero;
-        while(objComparable.compareTo(actual.getSiguiente().getContenido()) > 0) {
+        while(actual.getSiguiente() != null &&
+                objComparable.compareTo(actual.getSiguiente().getContenido()) > 0) {
             actual = actual.getSiguiente();
         }
         Nodo<E> nuevo = new Nodo<E>(o);

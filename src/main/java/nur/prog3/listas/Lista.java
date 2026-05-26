@@ -32,6 +32,20 @@ public class Lista<E> implements Iterable<E> {
         tamano++;
     }
 
+    public void adicionar(E o)  {
+        if(tamano == 0) {
+            insertar(o);
+            return;
+        }
+        Nodo<E> actual = primero;
+        while(actual.getSiguiente() != null)
+            actual = actual.getSiguiente();
+
+        Nodo<E> nuevo = new Nodo<>(o);
+        actual.setSiguiente(nuevo);
+        tamano++;
+    }
+
     public int tamano() {
         /**if (primero == null) {
             return 0;
@@ -65,6 +79,7 @@ public class Lista<E> implements Iterable<E> {
         }
         if (posicion == 1) {
             primero = primero.getSiguiente();
+            tamano--;
             return;
         }
         int contador = 1;
