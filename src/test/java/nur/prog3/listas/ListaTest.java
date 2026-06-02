@@ -18,4 +18,20 @@ public class ListaTest {
         assertEquals(esperado, resultado);
     }
 
+    @Test
+    public void insertarDosElementos()
+    {
+        // Arracnge
+        Lista<String> lista = new Lista<>();
+
+        // Act
+        lista.insertar("hugo");
+        lista.insertar("paco");
+
+        // Assert
+        String resultado = lista.toString();
+        String esperado = "[paco] -> [hugo] -> ";
+        assertEquals(esperado, resultado);
+    }
+
 }
