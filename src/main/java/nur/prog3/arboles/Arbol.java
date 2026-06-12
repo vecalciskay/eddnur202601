@@ -16,6 +16,9 @@ public class Arbol<E> {
         nodos = new LinkedHashMap<>();
     }
 
+    public Arbol(String s) {
+    }
+
     /**
      * Recorrer en anchura
      */
