@@ -23,7 +23,7 @@ public class ArbolFrame extends JFrame {
     }
 
     private Arbol<String> armarArbol() {
-        Arbol<String> a = new Arbol<>();
+        /*Arbol<String> a = new Arbol<>();
         a.insertar(null, "D");
 
         a.insertar("D", "N");
@@ -35,8 +35,8 @@ public class ArbolFrame extends JFrame {
 
         a.insertar("W","T");
         a.insertar("W","U");
-
-        //Arbol<String> a = new Arbol<>("D-(W-(U T) E N-(A C))");
+*/
+        Arbol<String> a = new ArbolString("T-(A B-(R N P Q) C-(X Z-(V S D)))");
         return a;
     }
 

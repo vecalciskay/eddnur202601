@@ -8,15 +8,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 public class Arbol<E> {
-    private Nodo<E> raiz;
-    private HashMap<String, Nodo<E>>  nodos;
+    protected Nodo<E> raiz;
+    protected HashMap<String, Nodo<E>>  nodos;
 
     public Arbol() {
         raiz = null;
         nodos = new LinkedHashMap<>();
-    }
-
-    public Arbol(String s) {
     }
 
     /**
