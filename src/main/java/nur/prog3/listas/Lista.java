@@ -70,6 +70,26 @@ public class Lista<E> implements Iterable<E> {
         return primero;
     }
 
+
+    public E obtener(int posicion) {
+        if (posicion > tamano) {
+            return null;
+        }
+        if (posicion < 1) {
+            return null;
+        }
+        if (posicion == 1) {
+            return primero.getContenido();
+        }
+        int contador = 1;
+        Nodo<E> actual = primero;
+        while(contador < posicion) {
+            contador++;
+            actual = actual.getSiguiente();
+        }
+        return actual.getContenido();
+    }
+
     public void eliminar(int posicion) {
         if (posicion > tamano) {
             return;

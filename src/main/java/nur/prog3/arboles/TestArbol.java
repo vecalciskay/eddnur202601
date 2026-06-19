@@ -2,7 +2,7 @@ package nur.prog3.arboles;
 
 public class TestArbol {
     static void main() {
-        Arbol<String> a = new Arbol<>();       a.insertar(null, "D");
+        Arbol<String> a = new Arbol<>();       a.insertar("", "D");
 
         a.insertar("D", "N");
         a.insertar("D", "E");

@@ -88,16 +88,29 @@ public class Arbol<E> {
         System.out.println();
     }
 
-    public void insertar(String padre, E hijo) {
-        if (padre == null) {
+    public String insertar(String padre, E hijo) {
+        if (padre != null && padre.isEmpty()) {
             raiz = new Nodo(hijo);
-            nodos.put(hijo.toString(), raiz);
-            return;
+            if (hijo instanceof Identificable) {
+                Identificable hijoId = (Identificable)hijo;
+                nodos.put(hijoId.getId(), raiz);
+                return hijoId.getId();
+            } else {
+                nodos.put(hijo.toString(), raiz);
+                return hijo.toString();
+            }
         }
         Nodo<E> nodoPadre = nodos.get(padre);
         Nodo<E> nodoHijo = new Nodo<>(hijo);
         nodoPadre.insertarHijo(nodoHijo);
-        nodos.put(hijo.toString(), nodoHijo);
+        if (hijo instanceof Identificable) {
+            Identificable hijoId = (Identificable)hijo;
+            nodos.put(hijoId.getId(), nodoHijo);
+            return hijoId.getId();
+        } else {
+            nodos.put(hijo.toString(), nodoHijo);
+            return  hijo.toString();
+        }
     }
 
     public Nodo<E> getRaiz() {
@@ -125,7 +138,7 @@ public class Arbol<E> {
         this.raiz = raiz;
     }
 
-    class Nodo<E> {
+    public class Nodo<E> {
         private E contenido;
         private Lista<Nodo<E>> hijos;
         private int visitado;
