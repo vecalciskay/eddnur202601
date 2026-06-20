@@ -17,3 +17,10 @@ En HTTP no se puede colocar símbolos como +, *, (, ) porque llevan otros signif
 |--------------------------|-------------------------------------------------|
 | (4/3)*(6-((8+4.3)+9))    | %284%2F3%29%2A%286-%28%288%2B4.3%29%2B9%29%29   |
 
+Entonces, para el valor de q más arriba, se debe utilizar la expresión codificada y no la expresión normal.
+Luego en Java se puede recuperar esa expresión codificada de esta manera:
+
+```java
+String expresion = URLDecoder.decode(encoded, StandardCharsets.UTF_8);
+logger.info("La expresion es: " + expresion);
+```
