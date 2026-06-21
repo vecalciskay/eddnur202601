@@ -38,6 +38,9 @@ se debe parar o no el proceso.
 
 ## Observer
 
-Utilizar observer sobre el servidor para poder ver en la interfaz el estado del servidor
+Utilizar observer sobre el servidor para poder ver en la interfaz el estado del servidor. Esto significa
+que la ventana (JFrame) que tiene los botones de comenzar y parar es el observador del servidor (y por ende de todos los threads que ocurren con ese objeto).
 
-## 
+## Fecha de presentación
+
+El práctico se debe presentar el 30 de Junio de 2026.
