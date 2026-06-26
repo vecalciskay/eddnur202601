@@ -29,13 +29,16 @@ public class ServidorWebVentana extends JFrame implements PropertyChangeListener
         btnIniciarServidor = new JButton("Iniciar Servidor");
         btnIniciarServidor.addActionListener(e -> btnIniciarServidorClicked());
         this.getContentPane().add(btnIniciarServidor, BorderLayout.WEST);
+        btnIniciarServidor.setFont(btnIniciarServidor.getFont().deriveFont(24.0f));
 
         btnPararServidor = new JButton("Parar Servidor");
         btnPararServidor.addActionListener(e -> btnPararServidorClicked());
         this.getContentPane().add(btnPararServidor, BorderLayout.EAST);
+        btnPararServidor.setFont(btnPararServidor.getFont().deriveFont(24.0f));
 
         lblStatusServidor = new JLabel(servidor.getInfo());
         this.getContentPane().add(lblStatusServidor, BorderLayout.SOUTH);
+        lblStatusServidor.setFont(lblStatusServidor.getFont().deriveFont(24.0f));
 
         this.pack();
         this.setVisible(true);

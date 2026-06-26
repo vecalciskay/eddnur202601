@@ -8,6 +8,8 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.net.Socket;
 import java.net.URLDecoder;
@@ -28,12 +30,14 @@ public class ProtocoloWeb implements Runnable {
     private static final String MIME_JPG = "image/jpeg";
     private static final String COMANDO_TEXTO = "q";
     private static final String COMANDO_IMAGEN = "i";
+    private PropertyChangeSupport observado;
 
     public ProtocoloWeb(Socket cliente) throws IOException {
         logger.info("Construyendo ProtocoloWeb");
         this.clt = cliente;
         this.salida = clt.getOutputStream();
         this.entrada = clt.getInputStream();
+        this.observado = new PropertyChangeSupport(this);
         logger.info("ProtocoloWeb creados los canales de entrada y salida");
     }
 
@@ -48,6 +52,8 @@ public class ProtocoloWeb implements Runnable {
             while (in.ready()) {
                 solicitud.adicionar(in.readLine());
             }
+            int nroBytes = calcularBytesEntrada(solicitud);
+            this.observado.firePropertyChange("ENTRADA",0,nroBytes);
             if (solicitud.tamano() == 0) {
                 logger.warn("Solicitud vacia, no hace nada");
                 return;
@@ -79,11 +85,21 @@ public class ProtocoloWeb implements Runnable {
         logger.info("ProtocoloWeb finalizado");
     }
 
+    private int calcularBytesEntrada(Lista<String> solicitud) {
+        int resultado = 0;
+        for(String linea : solicitud) {
+            resultado += linea.length();
+        }
+        return resultado;
+    }
+
     private void responderComandoNoConocido(String comandoGet) {
         String html = crearError(comandoGet);
         String encabezado =
                 crearEncabezado(HTTP_NOT_FOUND, "Not found", MIME_HTML, html.length());
+        int nroBytes = html.length() + encabezado.length();
         enviar(encabezado, html.getBytes(StandardCharsets.UTF_8));
+        this.observado.firePropertyChange("SALIDA",0,nroBytes);
     }
 
     private String crearEncabezado(int code, String msg, String mime, int bytes) {
@@ -113,7 +129,9 @@ public class ProtocoloWeb implements Runnable {
         logger.info("ProtocoloWeb responderComandoImagen");
         byte[] img = crearImagen(expresion);
         String encabezado = crearEncabezado(HTTP_OK, "Ok", MIME_JPG, img.length);
+        int nroBytes = encabezado.length() + img.length;
         enviar(encabezado, img);
+        this.observado.firePropertyChange("SALIDA",0,nroBytes);
     }
 
     private byte[] crearImagen(String expresion) {
@@ -136,7 +154,9 @@ public class ProtocoloWeb implements Runnable {
         logger.info("ProtocoloWeb responderComandoTexto");
         String html = crearHtml(expresion);
         String encabezado = crearEncabezado(HTTP_OK, "Ok", MIME_HTML, html.length());
+        int nroBytes = encabezado.length() + html.length();
         enviar(encabezado, html.getBytes(StandardCharsets.UTF_8));
+        this.observado.firePropertyChange("SALIDA",0,nroBytes);
     }
 
     private String crearHtml(String expresion) {
@@ -158,5 +178,9 @@ public class ProtocoloWeb implements Runnable {
                 logger.error("ProtocoloWeb error al cerrar la socket", e);
             }
         }
+    }
+
+    public void addObserver(PropertyChangeListener listener) {
+        this.observado.addPropertyChangeListener(listener);
     }
 }
